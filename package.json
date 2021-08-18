@@ -4,7 +4,7 @@
   "description": "Project to test the hability of the coop to solve basic problems",
   "main": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=dev node src/index.js",
+    "dev": "NODE_ENV=dev nodemon src/server.js",
     "test": "mocha"
   },
   "repository": {
@@ -21,13 +21,19 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/developmentOneZero/fileteste#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^10.0.0",
+    "knex": "^0.21.21",
     "koa": "^2.13.0",
-    "koa-router": "^9.4.0"
+    "koa-bodyparser": "^4.3.0",
+    "koa-router": "^9.4.0",
+    "sqlite3": "^5.0.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "chai-json-schema": "^1.5.1",
-    "mocha": "^8.1.3"
+    "mocha": "^8.1.3",
+    "nodemon": "^2.0.12"
   }
 }
