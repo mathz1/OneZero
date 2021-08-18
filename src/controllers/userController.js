@@ -14,7 +14,8 @@ module.exports = {
       const user = await db('user').where('email', email).select('email').first();
     
       if (user) {
-        ctx.throw(409, 'User already exists');
+        ctx.status = 409;
+        return ctx.body = { error: 'User already exists!' };
       }
 
       const encryptedPassword = await bcrypt.hash(password, 10);
@@ -32,7 +33,7 @@ module.exports = {
     }
     catch (err) {
       ctx.status = 400;
-      ctx.body =  { error: `Error in user register (${err.message})` }
+      ctx.body = { error: `Error in user register (${err.message})` }
     }
   }
 }
