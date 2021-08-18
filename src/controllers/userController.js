@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { read } = require('fs');
 const db = require('../database/index');
 
 function generateUniqueId() {
@@ -57,6 +58,20 @@ module.exports = {
     catch (err) {
       ctx.status = 400;
       ctx.body = { error: `Error in user update (${err.message})` }
+    }
+  },
+
+  async readAll(ctx) {
+    try {
+      const { page = 1 } = ctx.request.query;
+
+      const users = await db('user').limit(5).offset((page - 1) * 5).select('id', 'name', 'email');
+
+      ctx.body = { users }
+    }
+    catch (err) {
+      ctx.status = 400;
+      ctx.body = { error: `Error in user read (${err.message})` }
     }
   }
 }
