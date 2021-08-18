@@ -29,11 +29,34 @@ module.exports = {
         password: encryptedPassword
       });
 
-      ctx.body = { name: name, email: email };
+      ctx.body = { id: id, name: name, email: email };
     }
     catch (err) {
       ctx.status = 400;
       ctx.body = { error: `Error in user register (${err.message})` }
+    }
+  },
+
+  async update(ctx) {
+    try {
+      const id = ctx.request.header.authorization;
+
+      const { name } = ctx.request.body;
+
+      const user = await db('user').where('id', id).select('name').first();
+
+      if (!id || !user) {
+        ctx.status = 400;
+        return ctx.body = { error: 'User not exists!' }
+      }
+
+      await db('user').where('id', id).update({ name: name });
+
+      ctx.body = { id: id, name: name }
+    }
+    catch (err) {
+      ctx.status = 400;
+      ctx.body = { error: `Error in user update (${err.message})` }
     }
   }
 }

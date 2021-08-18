@@ -7,5 +7,6 @@ const router = new Router();
 const userController = require('./controllers/userController');
 
 router.post('/user/create', userController.create);
+router.patch('/user/update', userController.update);
 
 module.exports = router;
