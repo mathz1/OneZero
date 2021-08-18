@@ -73,5 +73,26 @@ module.exports = {
       ctx.status = 400;
       ctx.body = { error: `Error in user read (${err.message})` }
     }
+  },
+
+  async delete(ctx) {
+    try {
+      const id = ctx.request.header.authorization;
+
+      const user = await db('user').where('id', id).select('name').first();
+
+      if (!id || !user) {
+        ctx.status = 400;
+        return ctx.body = { error: 'User not exists!' }
+      }
+
+      await db('user').where('id', id).delete();
+
+      ctx.body = { message: 'User deleted!', name: user.name }
+    }
+    catch (err) {
+      ctx.status = 400;
+      ctx.body = { error: `Error in user delete (${err.message})` }
+    }
   }
 }
