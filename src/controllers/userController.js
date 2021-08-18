@@ -1,6 +1,5 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { read } = require('fs');
 const db = require('../database/index');
 
 function generateUniqueId() {
