@@ -102,6 +102,18 @@ describe('Testes da aplicaçao',  () => {
         });
     });
 
+    it('nao deveria criar um usuario com email ja em uso', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "matheuzin", email: "matheus.alves@devoz.com.br", password: "2020", age: 21})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(409);
+            expect(res.text).to.be.equal('{"error":"User already exists!"}');
+            done();
+        });
+    });
+
     it('deveria criar a usuaria paola', function (done) {
         chai.request(app)
         .post('/user/create')
@@ -171,6 +183,16 @@ describe('Testes da aplicaçao',  () => {
         });
     });
 
+    it('nao deveria retornar usuario se o id nao for passado no header', function (done) {
+        chai.request(app)
+        .get('/user/read')
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(400);
+            done();
+        });
+    });
+
     it('o usuario raupp existe e é valido', function (done) {
         chai.request(app)
         .get('/user/read')
@@ -183,6 +205,30 @@ describe('Testes da aplicaçao',  () => {
         });
     });
 
+    it('nao deveria editar um usuario que nao existe', function (done) {
+        chai.request(app)
+        .patch('/user/update')
+        .set('authorization', '6b2ca6ca')
+        .send({name:'naoexiste'})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(404);
+            expect(res.text).to.be.equal('{"error":"User not exists!"}');
+            done();
+        });
+    });
+
+    it('nao deveria editar se o id nao for passado no header', function (done) {
+        chai.request(app)
+        .patch('/user/update')
+        .send({name:'naoexiste'})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(400);
+            done();
+        });
+    });
+
     it('deveria editar o usuario raupp', function (done) {
         chai.request(app)
         .patch('/user/update')
@@ -191,6 +237,28 @@ describe('Testes da aplicaçao',  () => {
         .end(function (err,res) {
             expect(err).to.be.null;
             expect(res).to.have.status(200);
+            done();
+        });
+    });
+
+    it('nao deveria excluir um usuario que nao existe', function (done) {
+        chai.request(app)
+        .delete('/user/delete')
+        .set('authorization', '6b2ca6ca')
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(404);
+            expect(res.text).to.be.equal('{"error":"User not exists!"}');
+            done();
+        });
+    });
+
+    it('nao deveria excluir se o id nao for passado no header', function (done) {
+        chai.request(app)
+        .delete('/user/delete')
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(400);
             done();
         });
     });

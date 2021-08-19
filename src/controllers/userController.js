@@ -53,8 +53,8 @@ module.exports = {
 
       const user = await db('user').where('id', id).select('name').first();
 
-      if (!id || !user) {
-        ctx.status = 400;
+      if (!user) {
+        ctx.status = 404;
         return ctx.body = { error: 'User not exists!' }
       }
 
@@ -107,8 +107,8 @@ module.exports = {
 
       const user = await db('user').where('id', id).select('name').first();
 
-      if (!id || !user) {
-        ctx.status = 400;
+      if (!user) {
+        ctx.status = 404;
         return ctx.body = { error: 'User not exists!' }
       }
 
