@@ -9,7 +9,12 @@ function generateUniqueId() {
 module.exports = {
   async create(ctx) {
     try {
-      const { name, email, password } = ctx.request.body;
+      const { name, email, password, age } = ctx.request.body;
+
+      if (age < 18) {
+        ctx.status = 400;
+        return ctx.body = { error: 'Under age!' }
+      }
 
       const user = await db('user').where('email', email).select('email').first();
     
@@ -26,9 +31,11 @@ module.exports = {
         id,
         name,
         email,
-        password: encryptedPassword
+        password: encryptedPassword,
+        age
       });
 
+      ctx.status = 201;
       ctx.body = { id: id, name: name, email: email };
     }
     catch (err) {
