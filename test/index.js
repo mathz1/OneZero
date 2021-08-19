@@ -8,7 +8,8 @@
 //https://www.chaijs.com/plugins/chai-json-schema/
 //https://developer.mozilla.org/pt-PT/docs/Web/HTTP/Status (http codes)
 
-const app =  require('../src/index.js');
+const app =  require('../src/server.js');
+const db = require('../src/database/index');
 
 const assert = require('assert');
 const chai = require('chai')
@@ -24,20 +25,28 @@ const expect = chai.expect;
 const userSchema = {
     title: "Schema do Usuario, define como é o usuario, linha 24 do teste",
     type: "object",
-    required: ['nome', 'email', 'idade'],
+    required: ['name', 'email', 'password', 'age'],
     properties: {
-        nome: {
+        id: {
+            type: 'string'
+        },
+        name: {
             type: 'string'
         },
         email: {
             type: 'string'
         },
-        idade: {
+        password: {
+            type: 'string'
+        },
+        age: {
             type: 'number',
             minimum: 18
         }
     }
 }
+
+let rauppId; //variavel para armazenar o id de raupp e poder editar, ler e excluir o usuario depois
 
 //Inicio dos testes
 
@@ -50,14 +59,13 @@ describe('Um simples conjunto de testes', function () {
 
 //testes da aplicação
 describe('Testes da aplicaçao',  () => {
-    it('o servidor esta online', function (done) {
-        chai.request(app)
-        .get('/')
-        .end(function (err, res) {
-        expect(err).to.be.null;
-        expect(res).to.have.status(200);
-        done();
-        });
+    before(async () => {
+        await db.migrate.rollback();
+        await db.migrate.latest();
+    });
+
+    after(async () => {
+        await db.destroy();
     });
 
     it('deveria ser uma lista vazia de usuarios', function (done) {
@@ -66,63 +74,235 @@ describe('Testes da aplicaçao',  () => {
         .end(function (err, res) {
         expect(err).to.be.null;
         expect(res).to.have.status(200);
-        expect(res.body.rows).to.eql([]);
+        expect(res.body.users).to.eql([]);
         done();
         });
     });
 
     it('deveria criar o usuario raupp', function (done) {
         chai.request(app)
-        .post('/user')
-        .send({nome: "raupp", email: "jose.raupp@devoz.com.br", idade: 35})
+        .post('/user/create')
+        .send({name: "raupp", email: "jose.raupp@devoz.com.br", password: "1010", age: 35})
+        .end(function (err, res) {
+            rauppId = res.body.id;
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar o usuario matheus', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "matheus", email: "matheus.alves@devoz.com.br", password: "2020", age: 21})
         .end(function (err, res) {
             expect(err).to.be.null;
             expect(res).to.have.status(201);
             done();
         });
     });
-    //...adicionar pelo menos mais 5 usuarios. se adicionar usuario menor de idade, deve dar erro. Ps: não criar o usuario naoExiste
+
+    it('nao deveria criar um usuario com email ja em uso', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "matheuzin", email: "matheus.alves@devoz.com.br", password: "2020", age: 21})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(409);
+            expect(res.text).to.be.equal('{"error":"User already exists!"}');
+            done();
+        });
+    });
+
+    it('deveria criar a usuaria paola', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "paola", email: "paola.machado@devoz.com.br", password: "3030", age: 25})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar o usuario francisco', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "francisco", email: "francisco.alves@devoz.com.br", password: "4040", age: 41})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar a usuaria roselita', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "roselita", email: "roselita.flor@devoz.com.br", password: "5050", age: 40})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar a usuaria jennifer', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "jennifer", email: "jennifer.marinho@devoz.com.br", password: "6060", age: 21})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar a usuaria vanessa', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "vanessa", email: "vanessa.cabral@devoz.com.br", password: "8080", age: 23})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar a usuaria vitoria', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "vitoria", email: "vitoria.aragao@devoz.com.br", password: "9090", age: 19})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('o usuario bolinha tem menos de 18 anos', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name:"bolinha", email:"bolinha@devoz.com.br", password: "7070", age: 16})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res.text).to.be.equal('{"error":"Under age!"}');
+            expect(res).to.have.status(400);
+            done();
+        });
+    });
 
     it('o usuario naoExiste não existe no sistema', function (done) {
         chai.request(app)
-        .get('/user/naoExiste')
+        .get('/user/read')
+        .set('authorization', '6b2ca6ca')
         .end(function (err, res) {
-            expect(err.response.body.error).to.be.equal('User not found'); //possivelmente forma errada de verificar a mensagem de erro
+            expect(err).to.be.null;
+            expect(res.text).to.be.equal('{"error":"User not exists!"}');
             expect(res).to.have.status(404);
-            expect(res.body).to.be.jsonSchema(userSchema);
+            done();
+        });
+    });
+
+    it('nao deveria retornar usuario se o id nao for passado no header', function (done) {
+        chai.request(app)
+        .get('/user/read')
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(400);
             done();
         });
     });
 
     it('o usuario raupp existe e é valido', function (done) {
         chai.request(app)
-        .get('/user/raupp')
+        .get('/user/read')
+        .set('authorization', rauppId)
         .end(function (err, res) {
             expect(err).to.be.null;
             expect(res).to.have.status(200);
-            expect(res.body).to.be.jsonSchema(userSchema);
+            expect(res.body).to.be.jsonSchema(userSchema.properties);
+            done();
+        });
+    });
+
+    it('nao deveria editar um usuario que nao existe', function (done) {
+        chai.request(app)
+        .patch('/user/update')
+        .set('authorization', '6b2ca6ca')
+        .send({name:'naoexiste'})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(404);
+            expect(res.text).to.be.equal('{"error":"User not exists!"}');
+            done();
+        });
+    });
+
+    it('nao deveria editar se o id nao for passado no header', function (done) {
+        chai.request(app)
+        .patch('/user/update')
+        .send({name:'naoexiste'})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(400);
+            done();
+        });
+    });
+
+    it('deveria editar o usuario raupp', function (done) {
+        chai.request(app)
+        .patch('/user/update')
+        .set('authorization', rauppId)
+        .send({name:'jose raupp'})
+        .end(function (err,res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(200);
+            done();
+        });
+    });
+
+    it('nao deveria excluir um usuario que nao existe', function (done) {
+        chai.request(app)
+        .delete('/user/delete')
+        .set('authorization', '6b2ca6ca')
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(404);
+            expect(res.text).to.be.equal('{"error":"User not exists!"}');
+            done();
+        });
+    });
+
+    it('nao deveria excluir se o id nao for passado no header', function (done) {
+        chai.request(app)
+        .delete('/user/delete')
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(400);
             done();
         });
     });
 
     it('deveria excluir o usuario raupp', function (done) {
         chai.request(app)
-        .delete('/user/raupp')
+        .delete('/user/delete')
+        .set('authorization', rauppId)
         .end(function (err, res) {
             expect(err).to.be.null;
             expect(res).to.have.status(200);
-            expect(res.body).to.be.jsonSchema(userSchema);
             done();
         });
     });
 
     it('o usuario raupp não deve existir mais no sistema', function (done) {
         chai.request(app)
-        .get('/user/raupp')
+        .get('/user/read')
+        .set('authorization', rauppId)
         .end(function (err, res) {
             expect(err).to.be.null;
-            expect(res).to.have.status(200);
-            expect(res.body).to.be.jsonSchema(userSchema);
+            expect(res).to.have.status(404);
+            expect(res.text).to.be.equal('{"error":"User not exists!"}');
             done();
         });
     });
@@ -133,7 +313,18 @@ describe('Testes da aplicaçao',  () => {
         .end(function (err, res) {
         expect(err).to.be.null;
         expect(res).to.have.status(200);
-        expect(res.body.total).to.be.at.least(5);
+        expect(res.body.users).to.have.lengthOf(5);
+        done();
+        });
+    });
+
+    it('deveria ser uma lista com 2 usuarios', function (done) {
+        chai.request(app)
+        .get('/users?page=2')
+        .end(function (err, res) {
+        expect(err).to.be.null;
+        expect(res).to.have.status(200);
+        expect(res.body.users).to.have.lengthOf(2);
         done();
         });
     });
