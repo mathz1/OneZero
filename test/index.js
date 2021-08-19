@@ -158,6 +158,28 @@ describe('Testes da aplicaçao',  () => {
         });
     });
 
+    it('deveria criar a usuaria vanessa', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "vanessa", email: "vanessa.cabral@devoz.com.br", password: "8080", age: 23})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
+    it('deveria criar a usuaria vitoria', function (done) {
+        chai.request(app)
+        .post('/user/create')
+        .send({name: "vitoria", email: "vitoria.aragao@devoz.com.br", password: "9090", age: 19})
+        .end(function (err, res) {
+            expect(err).to.be.null;
+            expect(res).to.have.status(201);
+            done();
+        });
+    });
+
     it('o usuario bolinha tem menos de 18 anos', function (done) {
         chai.request(app)
         .post('/user/create')
@@ -178,7 +200,6 @@ describe('Testes da aplicaçao',  () => {
             expect(err).to.be.null;
             expect(res.text).to.be.equal('{"error":"User not exists!"}');
             expect(res).to.have.status(404);
-            expect(res.body).to.be.jsonSchema(userSchema.properties);
             done();
         });
     });
@@ -270,7 +291,6 @@ describe('Testes da aplicaçao',  () => {
         .end(function (err, res) {
             expect(err).to.be.null;
             expect(res).to.have.status(200);
-            expect(res.body).to.be.jsonSchema(userSchema.properties);
             done();
         });
     });
@@ -294,6 +314,17 @@ describe('Testes da aplicaçao',  () => {
         expect(err).to.be.null;
         expect(res).to.have.status(200);
         expect(res.body.users).to.have.lengthOf(5);
+        done();
+        });
+    });
+
+    it('deveria ser uma lista com 2 usuarios', function (done) {
+        chai.request(app)
+        .get('/users?page=2')
+        .end(function (err, res) {
+        expect(err).to.be.null;
+        expect(res).to.have.status(200);
+        expect(res.body.users).to.have.lengthOf(2);
         done();
         });
     });
