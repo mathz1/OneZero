@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../database/index');
 
+//funcao para gerar id unico para o banco de dados
 function generateUniqueId() {
   return crypto.randomBytes(4).toString('HEX');
 }
@@ -74,6 +75,25 @@ module.exports = {
       const users = await db('user').limit(5).offset((page - 1) * 5).select('id', 'name', 'email');
 
       ctx.body = { users }
+    }
+    catch (err) {
+      ctx.status = 400;
+      ctx.body = { error: `Error in user readAll (${err.message})` }
+    }
+  },
+
+  async read(ctx) {
+    try {
+      const id = ctx.request.header.authorization;
+
+      const user = await db('user').where('id', id).select('*').first();
+
+      if (!user) {
+        ctx.status = 404;
+        return ctx.body = { error: 'User not exists!' };
+      }
+
+      ctx.body = { user }
     }
     catch (err) {
       ctx.status = 400;
